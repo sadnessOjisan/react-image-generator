@@ -2,15 +2,18 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
 import Dropzone from "react-dropzone";
-import { Stage, Layer, Rect, Transformer, Image } from "react-konva";
+import { Stage, Layer, Transformer, Image } from "react-konva";
 
-class Rectangle extends React.Component {
+class ImageElement extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+        isLoaded:false
+    }
     this.handleChange = this.handleChange.bind(this);
   }
   handleChange(e) {
-    console.log("[Rectangle]<handleChange>this.props:  ", this.props);
+    console.log("[ImageElement]<handleChange>this.props:  ", this.props);
     const shape = e.target;
     this.props.onTransform({
       x: shape.x(),
@@ -20,9 +23,20 @@ class Rectangle extends React.Component {
       rotation: shape.rotation()
     });
   }
+
+  componentDidMount(){
+    this.imageNode.getLayer().batchDraw();
+    this.setState({isLoaded: true})
+  }
   render() {
+    console.log("[ImageElement]<render>fire");
+    console.log("[ImageElement]<render>this: ", this);
+    console.log("[ImageElement]<render>this.imageNode: ", this.imageNode);
+    this.imageNode && console.log("[ImageElement]<render>this.imageNode.getLayer(): ", this.imageNode.getLayer());
+    this.imageNode && console.log("[ImageElement]<render>this.imageNode.getLayer().batchDraw(): ", this.imageNode.getLayer().batchDraw());
+    this.imageNode && this.imageNode.getLayer().batchDraw();
     return (
-      <Rect
+      <Image
         x={this.props.x}
         y={this.props.y}
         width={this.props.width}
@@ -34,8 +48,11 @@ class Rectangle extends React.Component {
         onDragEnd={this.handleChange}
         onTransformEnd={this.handleChange}
         draggable
+        image={this.props.src}
+        ref={ref => {
+            this.imageNode = ref;
+          }}
       />
-      
     );
   }
 }
@@ -52,6 +69,7 @@ class TransformerComponent extends React.Component {
     this.checkNode();
   }
   checkNode() {
+      console.log("<checkNode> fire")
     const stage = this.transformer.getStage();
     const { selectedShapeName } = this.props;
 
@@ -96,19 +114,23 @@ class App extends Component {
     const addedImageURL = e[0].preview;
     const image = new window.Image();
     image.src = addedImageURL;
-    image.onload = () => {
-      this.imageNode.getLayer().batchDraw();
-    };
     const imageObject = {
-      src: image, 
-      name: e[0].preview, 
-      x: 30,
-      y:30
-    };
-    this.setState({
-      ...this.state,
-      inputImages: [...this.state.inputImages, imageObject]
-    });
+        src: image,
+        name: e[0].preview,
+        x: 30,
+        y: 30
+      };
+    image.onload = () => {
+        console.log("[app]<_handleAddImage> onload")
+        console.log("[app]<_handleAddImage>  this: ", this)
+        this.setState({
+            ...this.state,
+            inputImages: [...this.state.inputImages, imageObject]
+          });
+        this.imageNode.getLayer().batchDraw();
+      };
+    
+    
   }
 
   handleStageMouseDown(e) {
@@ -157,7 +179,8 @@ class App extends Component {
   }
   render() {
     const { image, inputImages, generatedImage } = this.state;
-    console.log("this.state: ", this.state)
+    this.imageNode && this.imageNode.getLayer().batchDraw();
+    console.log("[App]<render>this.state: ", this.state);
     return (
       <Container>
         <Stage
@@ -170,16 +193,12 @@ class App extends Component {
         >
           <Layer>
             {inputImages.map((img, i) => (
-              <Image
+              <ImageElement
                 key={i}
                 {...img}
                 onTransform={newProps => {
                   this.handleRectChange(i, newProps);
                 }}
-                image={img.src}
-                ref={ref => {
-                    this.imageNode = ref;
-                  }}
               />
             ))}
             <TransformerComponent
