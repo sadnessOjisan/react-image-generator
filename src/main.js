@@ -17,23 +17,36 @@ class App extends Component {
   }
 
   _handleAddImage(e) {
-    console.log("<_handleAddImage> e: ", e);
     const addedImageURL = e[0].preview;
     const image = new window.Image();
     image.src = addedImageURL;
-    console.log("<_handleAddImage> addedImageURL: ", addedImageURL);
-    this.setState({
-      ...this.state,
-      inputImages: [...this.state.inputImages, image]
-    });
     image.onload = () => {
         this.imageNode.getLayer().batchDraw();
       };
+    const imageObject = {src: image, x: 30, y: 30}
+    this.setState({
+      ...this.state,
+      inputImages: [...this.state.inputImages, imageObject]
+    });
+  }
+
+  _handleDragEnd(e, idx){
+    const dragedImage = this.state.inputImages[idx]
+    dragedImage.x = e.target.x()
+    dragedImage.y = e.target.y()
+    console.log("idx: ", idx)
+    console.log("this.state.inputImages: ", this.state.inputImages)
+    const images = Object.assign({}, images)
+    images.splice(idx+1, 1, dragedImage)
+    console.log("images: ", images)
+      this.setState({
+          ...this.state, 
+          inputImages: images
+      })
   }
 
   render() {
     const { inputImages } = this.state;
-    console.log("render inputImages: ", inputImages);
     return (
       <Container>
         <Stage width={600} height={400}>
@@ -42,13 +55,15 @@ class App extends Component {
               return (
                 <React.Fragment>
                   <Image
-                    image={image}
+                    image={image.src}
                     key={idx}
-                    y={30}
-                    x={30}
+                    y={image.x}
+                    x={image.y}
                     ref={node => {
                         this.imageNode = node;
                       }}
+                      draggable
+                      onDragEnd={(e)=>this._handleDragEnd(e, idx)}
                   />
                 </React.Fragment>
               );
