@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "styled-components": "^3.4.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "flow": "^0.2.3",
+    "html-webpack-plugin": "^3.2.0",
+    "prettier": "^1.14.2",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
+  },
+  "scripts": {
+    "format": "prettier ./src/**.js --write",
+    "webpack:local": "REACT_APP_ENV=local webpack-dev-server --hot --inline "
+  }
+}
