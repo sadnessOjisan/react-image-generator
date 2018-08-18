@@ -14,6 +14,7 @@ class App extends Component {
       generatedImage: null
     };
     this._handleAddImage = this._handleAddImage.bind(this);
+    this._handleClickExportBtn = this._handleClickExportBtn.bind(this);
   }
 
   _handleAddImage(e) {
@@ -21,36 +22,51 @@ class App extends Component {
     const image = new window.Image();
     image.src = addedImageURL;
     image.onload = () => {
-        this.imageNode.getLayer().batchDraw();
-      };
-    const imageObject = {src: image, x: 30, y: 30}
+      this.imageNode.getLayer().batchDraw();
+    };
+    const imageObject = { src: image, x: 30, y: 30 };
     this.setState({
       ...this.state,
       inputImages: [...this.state.inputImages, imageObject]
     });
   }
 
-  _handleDragEnd(e, idx){
-    const dragedImage = this.state.inputImages[idx]
-    dragedImage.x = e.target.x()
-    dragedImage.y = e.target.y()
-    console.log("idx: ", idx)
-    console.log("this.state.inputImages: ", this.state.inputImages)
-    const images = Object.assign({}, images)
-    images.splice(idx+1, 1, dragedImage)
-    console.log("images: ", images)
-      this.setState({
-          ...this.state, 
-          inputImages: images
-      })
+  _handleDragEnd(e, idx) {
+    const dragedImage = this.state.inputImages[idx];
+    dragedImage.x = e.target.x();
+    dragedImage.y = e.target.y();
+    const images = Object.assign({}, images);
+    images.splice(idx + 1, 1, dragedImage);
+    this.setState({
+      ...this.state,
+      inputImages: images
+    });
+  }
+
+  _handleClickExportBtn() {
+    console.log("this.stageRef: ", this.stageRef);
+    console.log("this.stageRef.getStage(): ", this.stageRef.getStage());
+    const data = this.stageRef.getStage().toDataURL("image/png");
+    this.setState({
+      ...this.state,
+      generatedImage: data
+    });
   }
 
   render() {
-    const { inputImages } = this.state;
+    const { inputImages, generatedImage } = this.state;
     return (
       <Container>
-        <Stage width={600} height={400}>
-          <Layer>
+        <Stage
+          width={600}
+          height={400}
+          ref={ref => { this.stageRef = ref; }}
+        >
+          <Layer
+            ref={node => {
+              this.layer = node;
+            }}
+          >
             {inputImages.map((image, idx) => {
               return (
                 <React.Fragment>
@@ -60,10 +76,11 @@ class App extends Component {
                     y={image.x}
                     x={image.y}
                     ref={node => {
-                        this.imageNode = node;
-                      }}
-                      draggable
-                      onDragEnd={(e)=>this._handleDragEnd(e, idx)}
+                        console.log("node: ", node)
+                      this.imageNode = node;
+                    }}
+                    draggable
+                    onDragEnd={e => this._handleDragEnd(e, idx)}
                   />
                 </React.Fragment>
               );
@@ -71,6 +88,9 @@ class App extends Component {
           </Layer>
         </Stage>
         <Dropzone onDrop={this._handleAddImage} />
+        <button onClick={this._handleClickExportBtn}>画像出力！</button>
+        <h2>しゅつりょく！</h2>
+        <img src={generatedImage} />
       </Container>
     );
   }
@@ -81,21 +101,6 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   flex-flow: column nowrap;
-`;
-
-const ImageList = styled.div`
-  overflow-x: scroll;
-  width: 100%;
-`;
-
-const ImageWrapper = styled.div`
-  width: 300px;
-  height: 300px;
-`;
-
-const TrimedImg = styled.img`
-  max-width: 100%;
-  max-height: 100%;
 `;
 
 ReactDOM.render(<App />, document.getElementById("root"));
