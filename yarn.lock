@@ -1999,7 +1999,7 @@ faye-websocket@~0.11.0:
   dependencies:
     websocket-driver ">=0.5.1"
 
-fbjs@^0.8.16, fbjs@^0.8.5:
+fbjs@^0.8.16, fbjs@^0.8.17, fbjs@^0.8.5:
   version "0.8.17"
   resolved "https://registry.yarnpkg.com/fbjs/-/fbjs-0.8.17.tgz#c4d598ead6949112653d6588b01a5cdcd9f90fdd"
   dependencies:
@@ -2771,6 +2771,10 @@ kind-of@^5.0.0:
 kind-of@^6.0.0, kind-of@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.2.tgz#01146b36a6218e64e58f3a8d66de5d7fc6f6d051"
+
+konva@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/konva/-/konva-2.2.1.tgz#ce9241f4eb418d30c62641e904f767e8c81093e7"
 
 lcid@^1.0.0:
   version "1.0.0"
@@ -3737,6 +3741,22 @@ react-dropzone@^5.0.0:
 react-is@^16.3.1:
   version "16.4.2"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.4.2.tgz#84891b56c2b6d9efdee577cc83501dfc5ecead88"
+
+react-konva@^1.7.14:
+  version "1.7.14"
+  resolved "https://registry.yarnpkg.com/react-konva/-/react-konva-1.7.14.tgz#8f67529a1cf65694508637eb4832d2494e33ecc9"
+  dependencies:
+    fbjs "^0.8.17"
+    react-reconciler "^0.12.0"
+
+react-reconciler@^0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/react-reconciler/-/react-reconciler-0.12.0.tgz#dd3ecd98f64a2d8449298dadab041910cafd2849"
+  dependencies:
+    fbjs "^0.8.16"
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
+    prop-types "^15.6.0"
 
 react@^16.4.2:
   version "16.4.2"

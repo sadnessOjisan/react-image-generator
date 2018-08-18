@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
 import Dropzone from "react-dropzone";
+import Konva from "konva";
+import { Stage, Layer, Image, Text } from "react-konva";
 import "./reset.css";
 
 class App extends Component {
@@ -16,11 +18,17 @@ class App extends Component {
 
   _handleAddImage(e) {
     console.log("<_handleAddImage> e: ", e);
-    const addedImage = e[0];
+    const addedImageURL = e[0].preview;
+    const image = new window.Image();
+    image.src = addedImageURL;
+    console.log("<_handleAddImage> addedImageURL: ", addedImageURL);
     this.setState({
       ...this.state,
-      inputImages: [...this.state.inputImages, addedImage.preview]
+      inputImages: [...this.state.inputImages, image]
     });
+    image.onload = () => {
+        this.imageNode.getLayer().batchDraw();
+      };
   }
 
   render() {
@@ -28,13 +36,25 @@ class App extends Component {
     console.log("render inputImages: ", inputImages);
     return (
       <Container>
-        <ImageList>
-          {inputImages.map(image => {
-            return(<ImageWrapper>
-              <TrimedImg src={image} />
-            </ImageWrapper>);
-          })}
-        </ImageList>
+        <Stage width={600} height={400}>
+          <Layer>
+            {inputImages.map((image, idx) => {
+              return (
+                <React.Fragment>
+                  <Image
+                    image={image}
+                    key={idx}
+                    y={30}
+                    x={30}
+                    ref={node => {
+                        this.imageNode = node;
+                      }}
+                  />
+                </React.Fragment>
+              );
+            })}
+          </Layer>
+        </Stage>
         <Dropzone onDrop={this._handleAddImage} />
       </Container>
     );
@@ -54,13 +74,13 @@ const ImageList = styled.div`
 `;
 
 const ImageWrapper = styled.div`
-width: 300px;
-height: 300px;
-`
+  width: 300px;
+  height: 300px;
+`;
 
 const TrimedImg = styled.img`
-max-width: 100%; 
-max-height: 100%;
-`
+  max-width: 100%;
+  max-height: 100%;
+`;
 
 ReactDOM.render(<App />, document.getElementById("root"));

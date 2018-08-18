@@ -1,9 +1,11 @@
 {
   "dependencies": {
     "babel-preset-stage-2": "^6.24.1",
+    "konva": "^2.2.1",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-dropzone": "^5.0.0",
+    "react-konva": "^1.7.14",
     "styled-components": "^3.4.2"
   },
   "devDependencies": {
