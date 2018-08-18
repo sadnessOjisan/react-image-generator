@@ -2,19 +2,111 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
 import Dropzone from "react-dropzone";
-import Konva from "konva";
-import { Stage, Layer, Image, Text } from "react-konva";
-import "./reset.css";
+import { Stage, Layer, Rect, Transformer } from "react-konva";
+
+class Rectangle extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleChange = this.handleChange.bind(this);
+  }
+  handleChange(e) {
+    console.log("[Rectangle]<handleChange>this.props:  ", this.props);
+    const shape = e.target;
+    this.props.onTransform({
+      x: shape.x(),
+      y: shape.y(),
+      width: shape.width() * shape.scaleX(),
+      height: shape.height() * shape.scaleY(),
+      rotation: shape.rotation()
+    });
+  }
+  render() {
+    return (
+      <Rect
+        x={this.props.x}
+        y={this.props.y}
+        width={this.props.width}
+        height={this.props.height}
+        scaleX={1}
+        scaleY={1}
+        fill={this.props.fill}
+        name={this.props.name}
+        onDragEnd={this.handleChange}
+        onTransformEnd={this.handleChange}
+        draggable
+      />
+    );
+  }
+}
+
+class TransformerComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.checkNode = this.checkNode.bind(this);
+  }
+  componentDidMount() {
+    this.checkNode();
+  }
+  componentDidUpdate() {
+    this.checkNode();
+  }
+  checkNode() {
+    const stage = this.transformer.getStage();
+    const { selectedShapeName } = this.props;
+
+    const selectedNode = stage.findOne("." + selectedShapeName);
+    if (selectedNode === this.transformer.node()) {
+      return;
+    }
+
+    if (selectedNode) {
+      this.transformer.attachTo(selectedNode);
+    } else {
+      this.transformer.detach();
+    }
+    this.transformer.getLayer().batchDraw();
+  }
+  render() {
+    return (
+      <Transformer
+        ref={node => {
+          this.transformer = node;
+        }}
+      />
+    );
+  }
+}
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      rectangles: [
+        {
+          x: 10,
+          y: 10,
+          width: 100,
+          height: 100,
+          fill: "red",
+          name: "rect1"
+        },
+        {
+          x: 150,
+          y: 150,
+          width: 100,
+          height: 100,
+          fill: "green",
+          name: "rect2"
+        }
+      ],
       inputImages: [],
-      generatedImage: null
+      generatedImage: null,
+      selectedShapeName: ""
     };
     this._handleAddImage = this._handleAddImage.bind(this);
     this._handleClickExportBtn = this._handleClickExportBtn.bind(this);
+    this.handleStageMouseDown = this.handleStageMouseDown.bind(this);
+    this.handleRectChange = this.handleRectChange.bind(this);
   }
 
   _handleAddImage(e) {
@@ -24,73 +116,89 @@ class App extends Component {
     image.onload = () => {
       this.imageNode.getLayer().batchDraw();
     };
-    const imageObject = { src: image, x: 30, y: 30 };
+    const imageObject = {
+      src: image
+    };
     this.setState({
       ...this.state,
       inputImages: [...this.state.inputImages, imageObject]
     });
   }
 
-  _handleDragEnd(e, idx) {
-    const dragedImage = this.state.inputImages[idx];
-    dragedImage.x = e.target.x();
-    dragedImage.y = e.target.y();
-    const images = Object.assign({}, images);
-    images.splice(idx + 1, 1, dragedImage);
+  handleStageMouseDown(e) {
+    // clicked on stage - cler selection
+    if (e.target === e.target.getStage()) {
+      this.setState({
+        selectedShapeName: ""
+      });
+      return;
+    }
+
+    const clickedOnTransformer =
+      e.target.getParent().className === "Transformer";
+    if (clickedOnTransformer) {
+      return;
+    }
+    const name = e.target.name();
+    const rect = this.state.rectangles.find(r => r.name === name);
+    if (rect) {
+      this.setState({
+        selectedShapeName: name
+      });
+    } else {
+      this.setState({
+        selectedShapeName: ""
+      });
+    }
+  }
+  handleRectChange(index, newProps) {
+    const rectangles = this.state.rectangles.concat();
+    rectangles[index] = {
+      ...rectangles[index],
+      ...newProps
+    };
     this.setState({
-      ...this.state,
-      inputImages: images
+      rectangles
     });
   }
 
   _handleClickExportBtn() {
-    console.log("this.stageRef: ", this.stageRef);
-    console.log("this.stageRef.getStage(): ", this.stageRef.getStage());
     const data = this.stageRef.getStage().toDataURL("image/png");
     this.setState({
       ...this.state,
       generatedImage: data
     });
   }
-
   render() {
     const { inputImages, generatedImage } = this.state;
     return (
       <Container>
         <Stage
-          width={600}
-          height={400}
-          ref={ref => { this.stageRef = ref; }}
+          width={window.innerWidth}
+          height={window.innerHeight}
+          onMouseDown={this.handleStageMouseDown}
+          ref={ref => {
+            this.stageRef = ref;
+          }}
         >
-          <Layer
-            ref={node => {
-              this.layer = node;
-            }}
-          >
-            {inputImages.map((image, idx) => {
-              return (
-                <React.Fragment>
-                  <Image
-                    image={image.src}
-                    key={idx}
-                    y={image.x}
-                    x={image.y}
-                    ref={node => {
-                        console.log("node: ", node)
-                      this.imageNode = node;
-                    }}
-                    draggable
-                    onDragEnd={e => this._handleDragEnd(e, idx)}
-                  />
-                </React.Fragment>
-              );
-            })}
+          <Layer>
+            {this.state.rectangles.map((rect, i) => (
+              <Rectangle
+                key={i}
+                {...rect}
+                onTransform={newProps => {
+                  this.handleRectChange(i, newProps);
+                }}
+              />
+            ))}
+            <TransformerComponent
+              selectedShapeName={this.state.selectedShapeName}
+            />
           </Layer>
         </Stage>
         <Dropzone onDrop={this._handleAddImage} />
-        <button onClick={this._handleClickExportBtn}>画像出力！</button>
-        <h2>しゅつりょく！</h2>
-        <img src={generatedImage} />
+        <button onClick={this._handleClickExportBtn}> 画像出力！ </button>
+        <h2> しゅつりょく！ </h2> <img src={generatedImage} />
       </Container>
     );
   }
