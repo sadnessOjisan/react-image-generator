@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
 import Dropzone from "react-dropzone";
-import { Stage, Layer, Rect, Transformer } from "react-konva";
+import { Stage, Layer, Rect, Transformer, Image } from "react-konva";
 
 class Rectangle extends React.Component {
   constructor(props) {
@@ -35,6 +35,7 @@ class Rectangle extends React.Component {
         onTransformEnd={this.handleChange}
         draggable
       />
+      
     );
   }
 }
@@ -81,24 +82,6 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      rectangles: [
-        {
-          x: 10,
-          y: 10,
-          width: 100,
-          height: 100,
-          fill: "red",
-          name: "rect1"
-        },
-        {
-          x: 150,
-          y: 150,
-          width: 100,
-          height: 100,
-          fill: "green",
-          name: "rect2"
-        }
-      ],
       inputImages: [],
       generatedImage: null,
       selectedShapeName: ""
@@ -117,7 +100,10 @@ class App extends Component {
       this.imageNode.getLayer().batchDraw();
     };
     const imageObject = {
-      src: image
+      src: image, 
+      name: e[0].preview, 
+      x: 30,
+      y:30
     };
     this.setState({
       ...this.state,
@@ -140,7 +126,7 @@ class App extends Component {
       return;
     }
     const name = e.target.name();
-    const rect = this.state.rectangles.find(r => r.name === name);
+    const rect = this.state.inputImages.find(r => r.name === name);
     if (rect) {
       this.setState({
         selectedShapeName: name
@@ -152,13 +138,13 @@ class App extends Component {
     }
   }
   handleRectChange(index, newProps) {
-    const rectangles = this.state.rectangles.concat();
-    rectangles[index] = {
-      ...rectangles[index],
+    const inputImages = this.state.inputImages.concat();
+    inputImages[index] = {
+      ...inputImages[index],
       ...newProps
     };
     this.setState({
-      rectangles
+      inputImages
     });
   }
 
@@ -170,7 +156,8 @@ class App extends Component {
     });
   }
   render() {
-    const { inputImages, generatedImage } = this.state;
+    const { image, inputImages, generatedImage } = this.state;
+    console.log("this.state: ", this.state)
     return (
       <Container>
         <Stage
@@ -182,13 +169,17 @@ class App extends Component {
           }}
         >
           <Layer>
-            {this.state.rectangles.map((rect, i) => (
-              <Rectangle
+            {inputImages.map((img, i) => (
+              <Image
                 key={i}
-                {...rect}
+                {...img}
                 onTransform={newProps => {
                   this.handleRectChange(i, newProps);
                 }}
+                image={img.src}
+                ref={ref => {
+                    this.imageNode = ref;
+                  }}
               />
             ))}
             <TransformerComponent
