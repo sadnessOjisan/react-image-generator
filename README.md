@@ -11,4 +11,3 @@ react-image-generator
 
 ## 参考記事
 * https://kuroeveryday.blogspot.com/2017/09/zoom-in-out-and-drag-to-move-on-canvas.html
-

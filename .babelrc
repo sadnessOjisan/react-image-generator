@@ -1,5 +1,5 @@
 {
-    "presets": ["react", "stage-2",
-      ["env", {"modules": false}]
-    ]
-  }
+    "presets": ["flow","react", "stage-2", ["env", {
+        "modules": false
+    }]]
+}

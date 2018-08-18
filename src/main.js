@@ -1,19 +1,27 @@
+// @flow
+
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
 import Dropzone from "react-dropzone";
 import { Stage, Layer, Transformer, Image } from "react-konva";
+import { ImageElementProps, ImageElementState, AppState } from "./typedef";
 
-class ImageElement extends React.Component {
+const canvasWidth: number = 600;
+const canvasHeight: number = 600;
+
+class ImageElement extends React.Component<
+  ImageElementProps,
+  ImageElementState
+> {
   constructor(props) {
     super(props);
     this.state = {
-        isLoaded:false
-    }
+      isLoaded: false
+    };
     this.handleChange = this.handleChange.bind(this);
   }
-  handleChange(e) {
-    console.log("[ImageElement]<handleChange>this.props:  ", this.props);
+  handleChange(e: SyntheticEvent<HTMLButtonElement>) {
     const shape = e.target;
     this.props.onTransform({
       x: shape.x(),
@@ -24,16 +32,12 @@ class ImageElement extends React.Component {
     });
   }
 
-  componentDidMount(){
+  componentDidMount() {
     this.imageNode.getLayer().batchDraw();
-    this.setState({isLoaded: true})
+    this.setState({ isLoaded: true });
   }
+
   render() {
-    console.log("[ImageElement]<render>fire");
-    console.log("[ImageElement]<render>this: ", this);
-    console.log("[ImageElement]<render>this.imageNode: ", this.imageNode);
-    this.imageNode && console.log("[ImageElement]<render>this.imageNode.getLayer(): ", this.imageNode.getLayer());
-    this.imageNode && console.log("[ImageElement]<render>this.imageNode.getLayer().batchDraw(): ", this.imageNode.getLayer().batchDraw());
     this.imageNode && this.imageNode.getLayer().batchDraw();
     return (
       <Image
@@ -50,8 +54,8 @@ class ImageElement extends React.Component {
         draggable
         image={this.props.src}
         ref={ref => {
-            this.imageNode = ref;
-          }}
+          this.imageNode = ref;
+        }}
       />
     );
   }
@@ -69,7 +73,6 @@ class TransformerComponent extends React.Component {
     this.checkNode();
   }
   checkNode() {
-      console.log("<checkNode> fire")
     const stage = this.transformer.getStage();
     const { selectedShapeName } = this.props;
 
@@ -96,7 +99,7 @@ class TransformerComponent extends React.Component {
   }
 }
 
-class App extends Component {
+class App extends Component<any, AppState> {
   constructor(props) {
     super(props);
     this.state = {
@@ -110,33 +113,29 @@ class App extends Component {
     this.handleRectChange = this.handleRectChange.bind(this);
   }
 
-  _handleAddImage(e) {
+  _handleAddImage(e: SyntheticEvent) {
     const addedImageURL = e[0].preview;
     const image = new window.Image();
     image.src = addedImageURL;
     const imageObject = {
-        src: image,
-        name: e[0].preview,
-        x: 30,
-        y: 30
-      };
+      src: image,
+      name: e[0].preview,
+      x: 30,
+      y: 30
+    };
     image.onload = () => {
-        console.log("[app]<_handleAddImage> onload")
-        console.log("[app]<_handleAddImage>  this: ", this)
-        this.setState({
-            ...this.state,
-            inputImages: [...this.state.inputImages, imageObject]
-          });
-        this.imageNode.getLayer().batchDraw();
-      };
-    
-    
+      this.setState({
+        ...this.state,
+        inputImages: [...this.state.inputImages, imageObject]
+      });
+      this.imageNode.getLayer().batchDraw();
+    };
   }
 
   handleStageMouseDown(e) {
-    // clicked on stage - cler selection
     if (e.target === e.target.getStage()) {
       this.setState({
+        ...this.state,
         selectedShapeName: ""
       });
       return;
@@ -151,14 +150,17 @@ class App extends Component {
     const rect = this.state.inputImages.find(r => r.name === name);
     if (rect) {
       this.setState({
+        ...this.state,
         selectedShapeName: name
       });
     } else {
       this.setState({
+        ...this.state,
         selectedShapeName: ""
       });
     }
   }
+
   handleRectChange(index, newProps) {
     const inputImages = this.state.inputImages.concat();
     inputImages[index] = {
@@ -183,9 +185,10 @@ class App extends Component {
     console.log("[App]<render>this.state: ", this.state);
     return (
       <Container>
-        <Stage
-          width={window.innerWidth}
-          height={window.innerHeight}
+        <h1>画像配置ジェネレータ</h1>
+        <StyledStage
+          width={canvasWidth}
+          height={canvasHeight}
           onMouseDown={this.handleStageMouseDown}
           ref={ref => {
             this.stageRef = ref;
@@ -205,10 +208,14 @@ class App extends Component {
               selectedShapeName={this.state.selectedShapeName}
             />
           </Layer>
-        </Stage>
-        <Dropzone onDrop={this._handleAddImage} />
+        </StyledStage>
+        <Dropzone onDrop={this._handleAddImage}>
+          ここに画像をDnDしてね！
+        </Dropzone>
+
         <button onClick={this._handleClickExportBtn}> 画像出力！ </button>
-        <h2> しゅつりょく！ </h2> <img src={generatedImage} />
+        <h2> ↓出力↓ </h2>
+        <img src={generatedImage} />
       </Container>
     );
   }
@@ -217,8 +224,13 @@ class App extends Component {
 const Container = styled.div`
   width: 100%;
   display: flex;
-  justify-content: center;
+  align-items: center;
   flex-flow: column nowrap;
+`;
+
+const StyledStage = styled(Stage)`
+  border: solid 1px gray;
+  margin: 16px;
 `;
 
 ReactDOM.render(<App />, document.getElementById("root"));
