@@ -1,10 +1,28 @@
 react-image-generator
 ====
 
-Reactでcanvasを扱えるのかどうか実験
-複数の画像を自分で配置して新しい画像を作るためのアプリ. 
+This is Experimental Repository for React & Canvas. 
 
-## 機能
-* 画像を登録
-* 画像を配置
-* 画像を生成
+## My Purpose
+
+1. upload images
+2. arrange image's position on Canvas
+3. generate the image as jpeg/png
+
+## How2Use
+
+```
+$ node -v
+v8.10.0
+
+$ yarn -v
+1.7.0
+
+$ yarn install
+
+# for deploy
+$ yarn run build
+
+# for dev
+$ yarn run webpack:local
+```
